@@ -3,48 +3,94 @@
 const express = require('express');
 // Create an router instance (aka "mini-app")
 const router = express.Router();
-
+const Note = require('../models/notes.model');
 /* ========== GET/READ ALL ITEM ========== */
 router.get('/notes', (req, res, next) => {
-
   console.log('Get All Notes');
-  res.json([
-    { id: 1, title: 'Temp 1' }, 
-    { id: 2, title: 'Temp 2' }, 
-    { id: 3, title: 'Temp 3' }
-  ]);
+  Note.find({})
+    .then((notes) => {
+      res.json(notes);
+    });
+}   
+);
 
-});
 
 /* ========== GET/READ A SINGLE ITEM ========== */
 router.get('/notes/:id', (req, res, next) => {
+  const { id } = req.params;
 
-  console.log('Get a Note');
-  res.json({ id: 2 });
+  // Query DB to search for Notes by ID
+  Note.findById(id)
+    .then(note => {
+      if (note) {
+        res.json(note);
+      } else {
+        console.log('err');
+        const err = new Error('Note with this ID does not exist');
+        err.status = 404;
+        next(err);
+      }
+    })
+    .catch(err => {
+      err.message = 'There was an error';
+      err.status = 404;
+      next(err);
+    });
 
 });
 
 /* ========== POST/CREATE AN ITEM ========== */
 router.post('/notes', (req, res, next) => {
 
-  console.log('Create a Note');
-  res.location('path/to/new/document').status(201).json({ id: 2 });
+  const requiredFields = ['title','content'];
+  const newNote = {};
+  requiredFields.forEach((field) => {
+    if (!(field in req.body)) {
+      const err = new Error(`Missing ${field} field!`);
+      err.status = 400;
+      next(err);
+    } else {
+      newNote[field] = req.body[field];
+    }
+  });
 
+  Note.create(newNote)
+    .then(response => {
+      res.status(201).json(response);
+    });
 });
+  
+// res.location('path/to/new/document').status(201).json({ id: 2 });
+
 
 /* ========== PUT/UPDATE A SINGLE ITEM ========== */
 router.put('/notes/:id', (req, res, next) => {
+  const {id} = req.params;
+  const updateObj = {};
+  const updateFields = ['title','content'];
 
-  console.log('Update a Note');
-  res.json({ id: 2 });
+  updateFields.forEach(field => {
+    if (field in req.body) {
+      updateObj[field] = req.body[field];
+    }
+  });
+
+  Note.findByIdAndUpdate(id, updateObj, {new:true})
+    .then(response => {
+      res.json(response);
+    }); 
 
 });
 
 /* ========== DELETE/REMOVE A SINGLE ITEM ========== */
 router.delete('/notes/:id', (req, res, next) => {
 
-  console.log('Delete a Note');
-  res.status(204).end();
+  const { id } = req.params;
+
+  Note.findByIdAndRemove(id)
+    .then((response) => {
+      res.status(204).json(response);
+    });
 
 });
 

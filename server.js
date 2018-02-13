@@ -2,10 +2,11 @@
 
 const express = require('express');
 const morgan = require('morgan');
-
 const { PORT } = require('./config');
-
 const notesRouter = require('./routes/notes');
+const mongoose = require('mongoose');
+mongoose.Promise = global.Promise;
+const {MONGODB_URI} = require('./config');
 
 // Create an Express application
 const app = express();
@@ -40,6 +41,15 @@ app.use(function (err, req, res, next) {
     error: app.get('env') === 'development' ? err : {}
   });
 });
+
+mongoose.connect(MONGODB_URI)
+  .then(instance => {
+    const conn = instance.connections[0];
+    console.info(`Connected to: mongodb://${conn.host}:${conn.port}/${conn.name}`);
+  })
+  .catch(err => {
+    console.error(err);
+  });
 
 // Listen for incoming connections
 app.listen(PORT, function () {
