@@ -5,15 +5,21 @@ mongoose.Promise = global.Promise;
 
 const notesSchema = mongoose.Schema({
   title: {
-    type:String,
-    required:true
+    type: String,
+    required:true,
+    index:true
   },
-  content:String,
+  content:{
+    type: String,
+    index:true
+  },
   create: {
-    type: Date, Default:Date.now
+    type: Date,
+    Default:Date.now
   },
 });
 
+notesSchema.index({title: 'text', content:'text'}, {weights: {title:2, content:1}});
 
 notesSchema.set('toObject', {
 

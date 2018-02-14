@@ -40,7 +40,7 @@ const noteful = (function () {
         <a href="#" class="name js-note-link">${item.title}</a>
         <button class="removeBtn js-note-delete-button">X</button>
         <div class="metadata">
-            <div class="date">${moment(item.created).calendar()}</div>
+            <div class="date">${moment(item.create).calendar()}</div>
             <div class="tags">${getTagsCommaSeparated(item.tags)}</div>
           </div>
       </li>`);
