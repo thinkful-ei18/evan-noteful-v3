@@ -66,11 +66,12 @@ router.post('/notes', (req, res, next) => {
 
   Note.create(newNote)
     .then(response => {
-      res.status(201).json(response);
+      res.location(`/v3/notes/${response.id}`).status(201).json(response);
+      // res.status(201).json(response);
     });
 });
   
-// res.location('path/to/new/document').status(201).json({ id: 2 });
+
 
 
 /* ========== PUT/UPDATE A SINGLE ITEM ========== */

@@ -42,18 +42,55 @@ app.use(function (err, req, res, next) {
   });
 });
 
-mongoose.connect(MONGODB_URI)
-  .then(instance => {
-    const conn = instance.connections[0];
-    console.info(`Connected to: mongodb://${conn.host}:${conn.port}/${conn.name}`);
-  })
-  .catch(err => {
-    console.error(err);
-  });
 
-// Listen for incoming connections
-app.listen(PORT, function () {
-  console.info(`Server listening on ${this.address().port}`);
-}).on('error', err => {
-  console.error(err);
-});
+// let server;
+
+// function runServer(MONGODB_URI) {
+//   return new Promise((resolve,reject) => {
+//     mongoose.connect(MONGODB_URI, err => {
+//       if (err) 
+//         return reject(err);
+//     });
+//     server = app.listen(PORT, () => {
+//       console.log(`Server listening on ${PORT}`);
+//       resolve();
+//     })
+//       .on('error', err => {
+//         mongoose.disconnect();
+//         reject(err);
+//       });
+//   });
+// }
+
+
+
+// const closeServer = () => {
+//   return mongoose.disconnect().then(() => {
+//     return new Promise((resolve,reject) => {
+//       console.log('Closing Server');
+//       server.close(err => {
+//         if (err) {
+//           return reject(err);
+//         }
+//         resolve();
+//       });
+//     });
+//   });
+// };
+
+// if (require.main === module) {
+//   runServer();
+// }
+
+if (require.main === module) {
+  mongoose.connect(MONGODB_URI)
+    .then(() => {
+      console.log('DB Connected');
+    });
+
+  app.listen(PORT, () => {
+    console.log(`App is now listening on port ${PORT}`);
+  });
+}
+
+module.exports = app;

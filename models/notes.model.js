@@ -3,7 +3,7 @@
 const mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 
-const notesSchema = mongoose.Schema({
+const notesSchema = new mongoose.Schema({
   title: {
     type: String,
     required:true,
@@ -15,7 +15,7 @@ const notesSchema = mongoose.Schema({
   },
   create: {
     type: Date,
-    Default:Date.now
+    default:Date.now
   },
 });
 
