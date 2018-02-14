@@ -47,6 +47,16 @@ describe('GET /v3/notes', function () {
         expect(apiresults.body).to.be.a('array');
       });
   });
+
+  it('should return the proper note when the a search is made for that note', function () {
+    const searchString = '?searchTerm=live';
+    return chai.request(app)
+      .get('/v3/notes'+searchString)
+      .then(response => {
+        expect(response).to.have.status(200);
+        expect(response.body.title).to.equal('10 ways cats can help you live to 100');
+      });
+  });
 });
 
 let note;
@@ -83,10 +93,12 @@ describe('GET /v3/notes/:id', function () {
   });
 });
 
-let newNote;
-const newObj = {"title":"My name is Bob", "content":"Bob is pretty cool"};
+
+
 
 describe('POST /v3/notes', function() {
+  let newNote;
+  const newObj = {'title':'My name is Bob', 'content':'Bob is pretty cool'};
   it('Should create an item when a valid note is created', function () {
     return chai.request(app)
       .post('/v3/notes/')
@@ -109,7 +121,7 @@ describe('POST /v3/notes', function() {
   });
 
   it('should throw an error when the user fails to post a required field', function () {
-    const postData = {"content":"I am a penguin"};
+    const postData = {'content':'I am a penguin'};
     return chai.request(app)
       .post('/v3/notes')
       .send(postData)
@@ -120,19 +132,91 @@ describe('POST /v3/notes', function() {
         expect(err).to.have.status(400);
       });
   });
-} );
+});
 
 
 describe('PUT /v3/notes/:id', function () {
-  const id = '000000000000000000000000';
-  const updateData = {
-    "content":"I am a penguin"
-  };
-  return chai.request(app)
-    .put('/v4/notes/000000000000000000000000')
-    .send(updateData)
-    .then((response) => {
-      expect(response).to.have.status(200);
-      expect(response.body).to.have.keys('title','content','create','id');
-    });
+  it('Should alter the correct note accurately on a valid PUT request', function () {
+    const id = '000000000000000000000000';
+    const updateData = {
+      'content':'I am a penguin'
+    };
+    return chai.request(app)
+      .put(`/v3/notes/${id}`)
+      .send(updateData)
+      .then((response) => {
+        expect(response).to.have.status(200);
+        expect(response.body).to.have.keys('title','content','create','id');
+        expect(response.body.content).to.equal(updateData.content);
+        return Note.findById(id);
+      })
+      .then((dbresponse) => {
+        expect(dbresponse.content).to.equal(updateData.content);
+        expect(dbresponse).to.be.an('object');
+      });
+  });
+  
+  it('should return a 404 error when a PUT request is made to a non-existent ID', function () {
+    const id = '000000000000000000009999';
+    return chai.request(app)
+      .post('/v3/notes/'+ id)
+      .then((response) => {
+
+      })
+      .catch(err => {
+        expect(err).to.have.status(404);
+      });
+  });
+
+  it('should return a 404 error when a PUT request is made to an invalid ID', function () {
+    const id = '999999999999999a9-0do-ds99999999999999';
+    return chai.request(app)
+      .post('/v3/notes/'+ id)
+      .then(response => {
+        console.log(response);
+      })
+      .catch(err => {
+        expect(err).to.have.status(404);
+      });
+  });
+});
+
+
+describe('DELETE /v4/notes/:id', function () {
+  it('Should delete Item on DELETE request to valid ID', function () {
+    const id = '000000000000000000000001';
+    return chai.request(app)
+      .delete('/v3/notes/'+id)
+      .then((response) => {
+        expect(response).to.have.status(204);
+        return Note.find();
+      })
+      .then(notes => {
+        expect(notes.length).to.equal(7);
+      });
+  });
+
+  it('Should return a 404 error when DELETE request is made to invalid ID',function () {
+    const id = '34';
+    return chai.request(app)
+      .delete('/v3/notes/'+id)
+      .then(response => {
+        
+      })
+      .catch(err => {
+        expect(err).to.have.status(404);
+      });
+  });
+
+  it('Should return a 404 error when DELETE request is made to non-existent ID',function () {
+    const id = '000000000000000000000900';
+    return chai.request(app)
+      .delete('/v3/notes/'+id)
+      .then(response => {
+        
+      })
+      .catch(err => {
+        expect(err).to.have.status(404);
+      });
+  });
 });

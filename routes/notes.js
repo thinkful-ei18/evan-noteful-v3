@@ -4,6 +4,8 @@ const express = require('express');
 // Create an router instance (aka "mini-app")
 const router = express.Router();
 const Note = require('../models/notes.model');
+const mongoose = require('mongoose');
+
 /* ========== GET/READ ALL ITEM ========== */
 
 router.get('/notes', (req, res, next) => {
@@ -16,7 +18,7 @@ router.get('/notes', (req, res, next) => {
       { score: { $meta: 'textScore' }}
     ).sort({score: {$meta: 'textScore'}})
       .then(results => {
-        res.json(results);
+        res.json(results[0]);
       });
   } else {
     Note.find({})
@@ -38,13 +40,18 @@ router.get('/notes/:id', (req, res, next) => {
       if (note) {
         return res.json(note);
       } 
-      console.log('err');
       const err = new Error('Note with this ID does not exist');
       err.status = 404;
       next(err);
     })
     .catch(err => {
-      next(err);
+      if (err.path === '_id') {
+        err.status = 404;
+        err.message = 'You\'ve requested an invalid Note ID. Not only does that not exist, but according to our schema it couldn\'t possibly exist. Good day sir.';
+        next(err);
+      } else {
+        next(err);
+      }
     });
 
 });
@@ -79,6 +86,11 @@ router.put('/notes/:id', (req, res, next) => {
   const {id} = req.params;
   const updateObj = {};
   const updateFields = ['title','content'];
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    const err = new Error('That Id is not Valid');
+    err.status = 404;
+    return next(err);
+  }
 
   updateFields.forEach(field => {
     if (field in req.body) {
@@ -88,9 +100,14 @@ router.put('/notes/:id', (req, res, next) => {
 
   Note.findByIdAndUpdate(id, updateObj, {new:true})
     .then(response => {
+      if (response === null) {
+        const err = new Error('Note with this id does not exist');
+        err.status = 404;
+        next(err);
+      }
       res.json(response);
-    }); 
-
+    })
+    .catch(next);
 });
 
 /* ========== DELETE/REMOVE A SINGLE ITEM ========== */
@@ -110,7 +127,13 @@ router.delete('/notes/:id', (req, res, next) => {
       }
     })
     .catch(err => {
-      next(err);
+      if (err.path === '_id') {
+        err.status = 404;
+        err.message = 'You\'ve requested an invalid Note ID. Not only does that not exist, but according to our schema it couldn\'t possibly exist. Good day sir.';
+        next(err);
+      } else {
+        next(err);
+      }
     });
 
 });
