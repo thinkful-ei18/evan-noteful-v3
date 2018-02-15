@@ -1,5 +1,5 @@
 'use strict';
 
 exports.PORT = process.env.PORT || 8080;
-exports.MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost/noteful-app';
+exports.MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost/noteful-app' ||  'mongodb://adminegarrett:mlab318@ds233218.mlab.com:33218/evang522-testdb';
 exports.TEST_MONGODB_URI = process.env.TEST_MONGODB_URI || 'mongodb://localhost/noteful-app-test';
