@@ -1,7 +1,6 @@
 'use strict';
 
 const mongoose = require('mongoose');
-mongoose.Promise = global.Promise;
 
 const notesSchema = new mongoose.Schema({
   title: {
@@ -17,6 +16,9 @@ const notesSchema = new mongoose.Schema({
     type: Date,
     default:Date.now
   },
+  folderId: { 
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Folder' }
 });
 
 notesSchema.index({title: 'text', content:'text'}, {weights: {title:2, content:1}});

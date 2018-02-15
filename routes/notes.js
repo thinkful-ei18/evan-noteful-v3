@@ -9,23 +9,28 @@ const mongoose = require('mongoose');
 /* ========== GET/READ ALL ITEM ========== */
 
 router.get('/notes', (req, res, next) => {
-  console.log('Get All Notes');
   const {searchTerm} = req.query;
+  const {folderId} = req.query;
+  const projection = {};
+
+
+  const queries = {};
 
   if (searchTerm) {
-    Note.find(
-      { $text: { $search: searchTerm} },
-      { score: { $meta: 'textScore' }}
-    ).sort({score: {$meta: 'textScore'}})
-      .then(results => {
-        res.json(results[0]);
-      });
-  } else {
-    Note.find({})
-      .then((notes) => {
-        res.json(notes);
-      });
+    queries.$text = {
+      $search:searchTerm
+    };
+    projection.score = {$meta :'textScore'};
   }
+
+  if (folderId) {
+    queries.folderId = folderId;
+  }
+
+  Note.find(queries,projection)
+    .then(notes => {
+      res.json(notes);
+    });
 });
 
 
@@ -58,9 +63,10 @@ router.get('/notes/:id', (req, res, next) => {
 
 /* ========== POST/CREATE AN ITEM ========== */
 router.post('/notes', (req, res, next) => {
-
+  const {folderId} = req.body;
   const requiredFields = ['title','content'];
   const newNote = {};
+
   requiredFields.forEach((field) => {
     if (!(field in req.body)) {
       const err = new Error(`Missing ${field} field!`);
@@ -70,6 +76,10 @@ router.post('/notes', (req, res, next) => {
       newNote[field] = req.body[field];
     }
   });
+
+  if (folderId) {
+    newNote.folderId = folderId;
+  }
 
   Note.create(newNote)
     .then(response => {
@@ -85,7 +95,9 @@ router.post('/notes', (req, res, next) => {
 router.put('/notes/:id', (req, res, next) => {
   const {id} = req.params;
   const updateObj = {};
+  const {folderId} = req.body;
   const updateFields = ['title','content'];
+  
   if (!mongoose.Types.ObjectId.isValid(id)) {
     const err = new Error('The requested ID is invalid');
     err.status = 400;
@@ -97,6 +109,12 @@ router.put('/notes/:id', (req, res, next) => {
       updateObj[field] = req.body[field];
     }
   });
+
+  
+  if (folderId) {
+    updateObj.folderId = folderId;
+  }
+
 
   Note.findByIdAndUpdate(id, updateObj, {new:true})
     .then(response => {

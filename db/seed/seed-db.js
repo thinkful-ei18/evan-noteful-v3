@@ -4,8 +4,10 @@ mongoose.Promise = global.Promise;
 
 const { MONGODB_URI } = require('../../config');
 const Note = require('../../models/notes.model.js');
+const Folder = require('../../models/folders.model');
 
 const seedNotes = require('../../db/seed/notes');
+const seedFolders = require('../../db/seed/folders.json');
 
 
 const seedDB = () => {
@@ -21,6 +23,15 @@ const seedDB = () => {
         .then(results => {
           console.info(`Inserted ${results.length} Notes`);
         });
+    })
+    .then(() => {
+      return Folder.insertMany(seedFolders)
+        .then(results => {
+          console.log(`Inserted ${results.length} Folders`);
+        });
+    })
+    .then(() => {
+      return Note.ensureIndexes();
     })
     .then(() => {
       return mongoose.disconnect()
