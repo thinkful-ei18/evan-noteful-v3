@@ -2,8 +2,8 @@ language: node_js
 node_js: node
 env:
   - NODE_ENV=test
-# services:
-#   - [DATABASE-TYPE]  
+services:
+- mongodb
 # deploy:
 #   provider: heroku
 #   api_key:
@@ -11,3 +11,4 @@ env:
 #   app: [YOUR-APP-NAME]
 #   on:
 #     repo: [YOUR-APP-REPO]
+# trigger travis
