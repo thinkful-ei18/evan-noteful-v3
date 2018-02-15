@@ -54,7 +54,7 @@ describe('GET /v3/notes', function () {
       .get('/v3/notes'+searchString)
       .then(response => {
         expect(response).to.have.status(200);
-        expect(response.body.title).to.equal('10 ways cats can help you live to 100');
+        expect(response.body[0].title).to.equal('10 ways cats can help you live to 100');
       });
   });
 });
@@ -106,7 +106,7 @@ describe('GET /v3/notes/:id', function () {
 
 describe('POST /v3/notes', function() {
   let newNote;
-  const newObj = {'title':'My name is Bob', 'content':'Bob is pretty cool'};
+  const newObj = {'title':'My name is Bob', 'content':'Bob is pretty cool', "folderId":"111111111111111111111103"};
   it('Should create an item when a valid note is created', function () {
     return chai.request(app)
       .post('/v3/notes/')
@@ -117,7 +117,7 @@ describe('POST /v3/notes', function() {
         expect(_newNote).to.have.header('location');
         expect(_newNote).to.be.json;
         expect(_newNote).to.be.an('object');
-        expect(_newNote.body).to.have.keys('id','title','content','create');
+        expect(_newNote.body).to.have.keys('id','title','content','create','folderId');
         return Note.findById(newNote.id);
       })
       .then(queryNote => {
@@ -154,7 +154,7 @@ describe('PUT /v3/notes/:id', function () {
       .send(updateData)
       .then((response) => {
         expect(response).to.have.status(200);
-        expect(response.body).to.have.keys('title','content','create','id');
+        expect(response.body).to.have.keys('title','content','create','id', 'folderId');
         expect(response.body.content).to.equal(updateData.content);
         return Note.findById(id);
       })
