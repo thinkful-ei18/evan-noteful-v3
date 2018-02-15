@@ -82,13 +82,21 @@ describe('GET /v3/notes/:id', function () {
   });
 
   it('Should return a 404 when the wrong ID is supplied', function () {
-    const id = '000000098270000000000004';
-    return Note
-      .findById(id)
-      .then((note) => {
-      })
+    const id = '000000000000000000000034';
+    return chai.request(app)
+      .get('/v3/notes/'+id)
       .catch(err => {
         expect(err).to.have.status(404);
+      });
+  });
+  
+
+  it('Should return a 400 status when an Invalid ID is supplied', function () {
+    const id = '0000000asasad-asd';
+    return chai.request(app)
+      .get('/v3/notes/'+id)
+      .catch(err => {
+        expect(err).to.have.status(400);
       });
   });
 });
@@ -159,7 +167,7 @@ describe('PUT /v3/notes/:id', function () {
   it('should return a 404 error when a PUT request is made to a non-existent ID', function () {
     const id = '000000000000000000009999';
     return chai.request(app)
-      .post('/v3/notes/'+ id)
+      .put('/v3/notes/'+ id)
       .then((response) => {
 
       })
@@ -168,15 +176,12 @@ describe('PUT /v3/notes/:id', function () {
       });
   });
 
-  it('should return a 404 error when a PUT request is made to an invalid ID', function () {
+  it('should return a 400 error when a PUT request is made to an invalid ID', function () {
     const id = '999999999999999a9-0do-ds99999999999999';
     return chai.request(app)
-      .post('/v3/notes/'+ id)
-      .then(response => {
-        console.log(response);
-      })
+      .put('/v3/notes/'+ id)
       .catch(err => {
-        expect(err).to.have.status(404);
+        expect(err).to.have.status(400);
       });
   });
 });

@@ -87,8 +87,8 @@ router.put('/notes/:id', (req, res, next) => {
   const updateObj = {};
   const updateFields = ['title','content'];
   if (!mongoose.Types.ObjectId.isValid(id)) {
-    const err = new Error('That Id is not Valid');
-    err.status = 404;
+    const err = new Error('The requested ID is invalid');
+    err.status = 400;
     return next(err);
   }
 
