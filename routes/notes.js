@@ -46,7 +46,7 @@ router.get('/notes/:id', (req, res, next) => {
     })
     .catch(err => {
       if (err.path === '_id') {
-        err.status = 404;
+        err.status = 400;
         err.message = 'You\'ve requested an invalid Note ID. Not only does that not exist, but according to our schema it couldn\'t possibly exist. Good day sir.';
         next(err);
       } else {
