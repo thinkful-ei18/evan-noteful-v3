@@ -9,7 +9,8 @@ const {runServer, closeServer} = require('../server');
 const seedNotes = require('../db/seed/notes.json');
 const mongoose = require('mongoose');
 const Note = require('../models/notes.model');
-
+const Folder = require('../models/folders.model');
+const seedFolders = require('../db/seed/folders.json');
 
 
 chai.use(chaiHttp);
@@ -22,7 +23,10 @@ before(function () {
 
 beforeEach(function () {
   return Note.insertMany(seedNotes)
-    .then(() => Note.ensureIndexes());
+    .then(() => Note.ensureIndexes())
+    .then(() => {
+      return Folder.insertMany(seedFolders);
+    });
 });
 
 afterEach(function () {
@@ -106,7 +110,7 @@ describe('GET /v3/notes/:id', function () {
 
 describe('POST /v3/notes', function() {
   let newNote;
-  const newObj = {'title':'My name is Bob', 'content':'Bob is pretty cool', "folderId":"111111111111111111111103"};
+  const newObj = {'title':'My name is Bob', 'content':'Bob is pretty cool', 'folderId':'111111111111111111111103'};
   it('Should create an item when a valid note is created', function () {
     return chai.request(app)
       .post('/v3/notes/')
