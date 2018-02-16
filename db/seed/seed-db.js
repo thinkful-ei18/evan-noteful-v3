@@ -6,9 +6,9 @@ const Note = require('../../models/notes.model.js');
 const Folder = require('../../models/folders.model');
 const Tag = require('../../models/tags.models');
 
-const seedNotes = require('../../db/seed/notes');
+const seedNotes = require('../../db/seed/notes.json');
 const seedFolders = require('../../db/seed/folders.json');
-const seedTags = require('../../db/seed/tags.json')
+const seedTags = require('../../db/seed/tags.json');
 
 
 const seedDB = () => {
@@ -33,9 +33,9 @@ const seedDB = () => {
     })
     .then(() => {
       Tag.insertMany(seedTags)
-      .then((results) => {
-        console.log(`Inserted ${results.length} Tags`);
-      })
+        .then((results) => {
+          console.log(`Inserted ${results.length} Tags`);
+        });
     })
     .then(() => {
       return Note.ensureIndexes();

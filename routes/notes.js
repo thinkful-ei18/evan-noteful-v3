@@ -11,7 +11,8 @@ const mongoose = require('mongoose');
 router.get('/notes', (req, res, next) => {
   const {searchTerm} = req.query;
   const {folderId} = req.query;
-  const projection = {};
+  const {tagId} = req.query;
+  const projection = {'title':1,'content':1,'create':1,'tags':1};
 
 
   const queries = {};
@@ -23,11 +24,17 @@ router.get('/notes', (req, res, next) => {
     projection.score = {$meta :'textScore'};
   }
 
+  if (tagId) {
+    queries.tags = tagId;
+  }
+
   if (folderId) {
     queries.folderId = folderId;
   }
 
+  console.log(queries);
   Note.find(queries,projection)
+    .populate('tags')
     .then(notes => {
       res.json(notes);
     });

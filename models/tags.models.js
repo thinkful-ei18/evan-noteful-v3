@@ -18,4 +18,4 @@ tagSchema.set('toObject', {
 });
 
 
-module.exports = mongoose.model('tags', tagSchema);
+module.exports = mongoose.model('Tag', tagSchema);

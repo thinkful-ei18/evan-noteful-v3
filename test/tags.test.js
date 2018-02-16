@@ -147,7 +147,7 @@ describe('PUT /v3/tags', function () {
 });
 
 
-describe.only('DELETE /v3/tags/:id', function () {
+describe('DELETE /v3/tags/:id', function () {
   it('Should delete the correct tag when querying a valid ID', function () {
     const ID = '222222222222222222222201';
     return chai.request(app)

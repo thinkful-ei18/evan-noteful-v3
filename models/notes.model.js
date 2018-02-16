@@ -18,11 +18,12 @@ const notesSchema = new mongoose.Schema({
   },
   folderId: { 
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Folder' }
-  },{
-  tags: [{type:mongoose.Schema.Types.ObjectId, ref:'tag'}]
-  }
-);
+    ref: 'Folder' 
+  },
+  tags:[{type:mongoose.Schema.Types.ObjectId, ref:'Tag'}]
+
+});
+  
 
 notesSchema.index({title: 'text', content:'text'}, {weights: {title:2, content:1}});
 
