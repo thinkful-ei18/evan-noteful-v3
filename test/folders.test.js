@@ -80,12 +80,12 @@ describe('POST /v3/folders', function () {
   });
 
   it('Should return a 400 status error when the submission is missing a required field', function () {
-    const newItem = {"title":"Moonland"};
+    const newItem = {'title':'Moonland'};
     return chai.request(app)
       .post('/v3/folders')
       .send(newItem)
       .catch(err => {
         expect(err).to.have.status(400);
-      })
+      });
   });
 });

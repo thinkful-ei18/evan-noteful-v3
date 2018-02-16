@@ -122,26 +122,26 @@ router.delete('/folders/:id', (req,res,next) => {
 
   let restrict = false;
   Note.find({'folderId':id})
-        .then((response) => {
-          if (response.length) {
-            restrict = true;
-            const err = new Error('Cannot delete folder because it contains notes!');
-            err.status = 400;
-            return next(err);
-          }
-        })
-        .then(() => {
-          if (!restrict) {
-  Folder.findByIdAndRemove(id)
     .then((response) => {
-      if (response === null) {
-        const err = new Error('A folder with this id was not found.');
-        err.status = 404;
+      if (response.length) {
+        restrict = true;
+        const err = new Error('Cannot delete folder because it contains notes!');
+        err.status = 400;
         return next(err);
       }
     })
-  }
-  })
+    .then(() => {
+      if (!restrict) {
+        Folder.findByIdAndRemove(id)
+          .then((response) => {
+            if (response === null) {
+              const err = new Error('A folder with this id was not found.');
+              err.status = 404;
+              return next(err);
+            }
+          });
+      }
+    })
     .catch(err => {
       next(err);
     });
