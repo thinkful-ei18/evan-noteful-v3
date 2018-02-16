@@ -47,6 +47,8 @@ router.get('/notes/:id', (req, res, next) => {
 
   // Query DB to search for Notes by ID
   Note.findById(id)
+    .select('title content create tags')
+    .populate('tags')
   
     .then(note => {
       if (note) {
@@ -70,9 +72,21 @@ router.get('/notes/:id', (req, res, next) => {
 
 /* ========== POST/CREATE AN ITEM ========== */
 router.post('/notes', (req, res, next) => {
-  const {folderId} = req.body;
+  const {folderId, tags} = req.body;
   const requiredFields = ['title','content'];
   const newNote = {};
+
+  if (tags) { 
+    tags.forEach((tag) => {
+      if (!mongoose.Types.ObjectId.isValid(tag)) {
+        const err = new Error('This is an improperly formatted ID. Not only does what you\'re looking for not exist, it couldn\'t possibly exist!');
+        err.status = 400;
+        return next(err);
+      }
+    });
+    newNote.tags = tags;
+  }
+
 
   requiredFields.forEach((field) => {
     if (!(field in req.body)) {
@@ -88,6 +102,7 @@ router.post('/notes', (req, res, next) => {
     newNote.folderId = folderId;
   }
 
+
   Note.create(newNote)
     .then(response => {
       res.location(`/v3/notes/${response.id}`).status(201).json(response);
@@ -102,13 +117,24 @@ router.post('/notes', (req, res, next) => {
 router.put('/notes/:id', (req, res, next) => {
   const {id} = req.params;
   const updateObj = {};
-  const {folderId} = req.body;
+  const {folderId,tags} = req.body;
   const updateFields = ['title','content'];
   
   if (!mongoose.Types.ObjectId.isValid(id)) {
     const err = new Error('The requested ID is invalid');
     err.status = 400;
     return next(err);
+  }
+
+  if (tags) { 
+    tags.forEach((tag) => {
+      if (!mongoose.Types.ObjectId.isValid(tag)) {
+        const err = new Error('This is an improperly formatted ID. Not only does what you\'re looking for not exist, it couldn\'t possibly exist!');
+        err.status = 400;
+        return next(err);
+      }
+    });
+    updateObj.tags = tags;
   }
 
   updateFields.forEach(field => {

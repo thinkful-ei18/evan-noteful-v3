@@ -5,7 +5,6 @@ const chaiHttp = require('chai-http');
 const chaiSpies = require('chai-spies');
 const expect = chai.expect;
 const {TEST_MONGODB_URI} = require('../config');
-const {runServer, closeServer} = require('../server');
 const seedNotes = require('../db/seed/notes.json');
 const mongoose = require('mongoose');
 const Note = require('../models/notes.model');
@@ -125,7 +124,7 @@ describe('POST /v3/notes', function() {
         expect(_newNote).to.have.header('location');
         expect(_newNote).to.be.json;
         expect(_newNote).to.be.an('object');
-        expect(_newNote.body).to.have.keys('id','title','content','create','folderId');
+        expect(_newNote.body).to.have.keys('id','title','content','create','folderId','tags');
         return Note.findById(newNote.id);
       })
       .then(queryNote => {
@@ -162,7 +161,7 @@ describe('PUT /v3/notes/:id', function () {
       .send(updateData)
       .then((response) => {
         expect(response).to.have.status(200);
-        expect(response.body).to.have.keys('title','content','create','id', 'folderId');
+        expect(response.body).to.have.keys('title','content','create','id', 'folderId','tags');
         expect(response.body.content).to.equal(updateData.content);
         return Note.findById(id);
       })
@@ -213,9 +212,6 @@ describe('DELETE /v4/notes/:id', function () {
     const id = '34';
     return chai.request(app)
       .delete('/v3/notes/'+id)
-      .then(response => {
-        
-      })
       .catch(err => {
         expect(err).to.have.status(404);
       });
@@ -225,9 +221,6 @@ describe('DELETE /v4/notes/:id', function () {
     const id = '000000000000000000000900';
     return chai.request(app)
       .delete('/v3/notes/'+id)
-      .then(response => {
-        
-      })
       .catch(err => {
         expect(err).to.have.status(404);
       });
