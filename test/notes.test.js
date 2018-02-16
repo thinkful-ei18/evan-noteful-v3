@@ -11,7 +11,8 @@ const mongoose = require('mongoose');
 const Note = require('../models/notes.model');
 const Folder = require('../models/folders.model');
 const seedFolders = require('../db/seed/folders.json');
-
+const seedTags = require('../db/seed/tags.json');
+const Tag = require('../models/tags.models');
 
 chai.use(chaiHttp);
 chai.use(chaiSpies);
@@ -26,7 +27,10 @@ beforeEach(function () {
     .then(() => Note.ensureIndexes())
     .then(() => {
       return Folder.insertMany(seedFolders);
-    });
+    })
+    .then(() => {
+      return Tag.insertMany(seedTags);
+    })
 });
 
 afterEach(function () {

@@ -120,6 +120,18 @@ router.delete('/folders/:id', (req,res,next) => {
     return next(err);
   }
 
+  let restrict = false;
+  Note.find({'folderId':id})
+        .then((response) => {
+          if (response.length) {
+            restrict = true;
+            const err = new Error('Cannot delete folder because it contains notes!');
+            err.status = 400;
+            return next(err);
+          }
+        })
+        .then(() => {
+          if (!restrict) {
   Folder.findByIdAndRemove(id)
     .then((response) => {
       if (response === null) {
@@ -128,16 +140,8 @@ router.delete('/folders/:id', (req,res,next) => {
         return next(err);
       }
     })
-    .then(() => {
-      Note.find({'folderId':id})
-        .then((response) => {
-          if (response.length) {
-            const err = new Error('Cannot delete folder because it contains notes!');
-            err.status = 400;
-            return next(err);
-          }
-        });
-    })
+  }
+  })
     .catch(err => {
       next(err);
     });

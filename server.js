@@ -5,6 +5,7 @@ const morgan = require('morgan');
 const { PORT } = require('./config');
 const notesRouter = require('./routes/notes');
 const foldersRouter = require('./routes/folders');
+const tagsRouter = require('./routes/tags');
 const mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 const {MONGODB_URI} = require('./config');
@@ -28,6 +29,7 @@ app.use(express.json());
 app.use('/v3', notesRouter);
 app.use('/v3', foldersRouter);
 app.use('/v3', audioRouter);
+app.use('/v3', tagsRouter);
 
 // Catch-all 404
 app.use(function (req, res, next) {

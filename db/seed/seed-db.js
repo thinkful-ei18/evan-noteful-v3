@@ -1,13 +1,14 @@
 'use strict';
 const mongoose = require('mongoose');
-mongoose.Promise = global.Promise;
 
 const { MONGODB_URI } = require('../../config');
 const Note = require('../../models/notes.model.js');
 const Folder = require('../../models/folders.model');
+const Tag = require('../../models/tags.models');
 
 const seedNotes = require('../../db/seed/notes');
 const seedFolders = require('../../db/seed/folders.json');
+const seedTags = require('../../db/seed/tags.json')
 
 
 const seedDB = () => {
@@ -29,6 +30,12 @@ const seedDB = () => {
         .then(results => {
           console.log(`Inserted ${results.length} Folders`);
         });
+    })
+    .then(() => {
+      Tag.insertMany(seedTags)
+      .then((results) => {
+        console.log(`Inserted ${results.length} Tags`);
+      })
     })
     .then(() => {
       return Note.ensureIndexes();
