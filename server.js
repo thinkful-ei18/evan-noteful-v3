@@ -8,6 +8,7 @@ const foldersRouter = require('./routes/folders');
 const mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 const {MONGODB_URI} = require('./config');
+const audioRouter = require('./routes/audio');
 
 // Create an Express application
 const app = express();
@@ -26,6 +27,7 @@ app.use(express.json());
 // Mount router on "/api"
 app.use('/v3', notesRouter);
 app.use('/v3', foldersRouter);
+app.use('/v3', audioRouter);
 
 // Catch-all 404
 app.use(function (req, res, next) {

@@ -257,3 +257,6 @@ select {
   color:red;
 }
 
+.audioelement {
+  display:none;
+}

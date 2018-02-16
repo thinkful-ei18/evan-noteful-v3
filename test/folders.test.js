@@ -28,7 +28,3 @@ describe('GET /v3/folders', function () {
       });
   });
 });
-
-describe('GET /v3/folders/:id', function () {
-  it('Should return the correct ')
-});
