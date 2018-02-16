@@ -14,17 +14,52 @@ const Note = require('../models/notes.model');
 chai.use(chaiHttp);
 chai.use(chaiSpies);
 
+const dbcall = Folder.find();
+const servercall = chai.request(app).get('/v3/folders');
 
 
 describe('GET /v3/folders', function () {
   it('Should return 4 folders', function () {
-    return chai.request(app)
-      .get('/v3/folders')
-      .then((folders) => {
-        expect(folders.body.length).to.equal(4);
-        expect(folders.body[0]).to.have.keys('id','name');
-        expect(folders).to.have.status(200);
-        expect(folders).to.be.json;
+    return Promise.all([servercall,dbcall])
+      .then(([serverRes, dbRes]) => {
+        expect(serverRes.body.length).to.equal(4);
+        expect(dbRes.length).to.equal(serverRes.body.length);
+        expect(serverRes.body[0]).to.have.keys('id','name');
+        expect(serverRes).to.have.status(200);
+        expect(dbRes).to.be.an('array');
+        expect(dbRes[0].name).to.equal(serverRes.body[0].name);
       });
   });
 });
+
+
+describe('GET /v3/folders/:id', function () {
+  it('Should return the first note when querying the first note ID', function () {
+    const id = '111111111111111111111101';
+    return chai.request(app)
+      .get('/v3/folders/'+id)
+      .then((response) => {
+        expect(response.body.id).to.equal('111111111111111111111101');
+        expect(response.body.name).to.equal('Drafts');
+        expect(response).to.have.status(200);
+        expect(response).to.be.json;
+        return Folder.findById(id);
+      })
+      .then((folder) => {
+        expect(folder.name).to.equal('Drafts');
+        expect(folder.id).to.equal('111111111111111111111101');
+      });
+  });
+
+  it('should return a 404 for non-existent ID', function () {
+    const id = '111111111111111111111130';
+    return chai.request(app)
+      .get('/v3/folders/'+id)
+      .catch(err => {
+        expect(err.status).to.equal(404);
+      });
+  });
+});
+
+// describe('POST /v3/folders', function () 
+// });
