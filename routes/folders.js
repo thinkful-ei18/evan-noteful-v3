@@ -145,10 +145,3 @@ router.delete('/folders/:id', (req,res,next) => {
 
 
 module.exports = router;
-
-
-// .then(() => {
-//   Note.updateMany({'folderId':id}, {'folderId':null})
-//     .then(() => {
-//       res.status(204).end();
-//     });

@@ -61,5 +61,21 @@ describe('GET /v3/folders/:id', function () {
   });
 });
 
-// describe('POST /v3/folders', function () 
-// });
+describe('POST /v3/folders', function () {
+  it('Should create a new note when required fields are specified', function () {
+    const newItem = {'name':'Jerry'};
+    return chai.request(app)
+      .post('/v3/folders')
+      .send(newItem)
+      .then((response) => {
+        expect(response).to.have.status(201);
+        expect(response).to.be.json;
+        expect(response.body).to.have.keys('id','name');
+        expect(response.body.name).to.equal('Jerry');
+        return Folder.findById(response.body.id);
+      })
+      .then(folder => {
+        expect(folder.name).to.equal('Jerry');
+      });
+  });
+});
