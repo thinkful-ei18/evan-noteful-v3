@@ -7,9 +7,13 @@ const notesRouter = require('./routes/notes');
 const foldersRouter = require('./routes/folders');
 const tagsRouter = require('./routes/tags');
 const mongoose = require('mongoose');
-mongoose.Promise = global.Promise;
 const {MONGODB_URI} = require('./config');
 const audioRouter = require('./routes/audio');
+const usersRouter = require('./routes/users');
+const loginRouter = require('./routes/auth.routes');
+const passport = require('passport');
+const localStrategy = require('./passport/local');
+
 
 // Create an Express application
 const app = express();
@@ -30,6 +34,8 @@ app.use('/v3', notesRouter);
 app.use('/v3', foldersRouter);
 app.use('/v3', audioRouter);
 app.use('/v3', tagsRouter);
+app.use('/v3', usersRouter);
+app.use('/v3', loginRouter);
 
 // Catch-all 404
 app.use(function (req, res, next) {

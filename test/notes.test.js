@@ -29,7 +29,7 @@ beforeEach(function () {
     })
     .then(() => {
       return Tag.insertMany(seedTags);
-    })
+    });
 });
 
 afterEach(function () {
