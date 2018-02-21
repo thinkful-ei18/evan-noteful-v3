@@ -7,10 +7,11 @@ const notesRouter = require('./routes/notes');
 const foldersRouter = require('./routes/folders');
 const tagsRouter = require('./routes/tags');
 const mongoose = require('mongoose');
-const {MONGODB_URI} = require('./config');
+const { MONGODB_URI } = require('./config');
 const audioRouter = require('./routes/audio');
 const usersRouter = require('./routes/users');
 const loginRouter = require('./routes/auth.routes');
+
 const passport = require('passport');
 const localStrategy = require('./passport/local');
 
@@ -29,7 +30,10 @@ app.use(express.static('public'));
 // Parse request body
 app.use(express.json());
 
-// Mount router on "/api"
+// Passport Init
+passport.use(localStrategy);
+
+// // Mount router on "/api"
 app.use('/v3', notesRouter);
 app.use('/v3', foldersRouter);
 app.use('/v3', audioRouter);
@@ -38,7 +42,7 @@ app.use('/v3', usersRouter);
 app.use('/v3', loginRouter);
 
 // Catch-all 404
-app.use(function (req, res, next) {
+app.use((req, res, next) => {
   const err = new Error('Not Found');
   err.status = 404;
   next(err);
@@ -46,11 +50,11 @@ app.use(function (req, res, next) {
 
 // Catch-all Error handler
 // Add NODE_ENV check to prevent stacktrace leak
-app.use(function (err, req, res, next) {
+app.use((err, req, res) => {
   res.status(err.status || 500);
   res.json({
     message: err.message,
-    error: app.get('env') === 'development' ? err : {}
+    error: app.get('env') === 'development' ? err : {},
   });
 });
 

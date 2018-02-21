@@ -1,36 +1,38 @@
 'use strict';
-const express =require('express');
+
+const express = require('express');
+
 const router = express.Router();
 
 
-//Bring in Tag Model
+// Bring in Tag Model
 const Tag = require('../models/tags.models');
 
 // MAIN GET ROUTE
 
-router.get('/tags', (req,res,next) => {
+router.get('/tags', (req, res, next) => {
   Tag.find()
     .then((response) => {
       res.json(response);
     })
-    .catch(err => {
+    .catch((err) => {
       next(err);
     });
 });
 
-router.get('/tags/:id', (req,res,next) => {
+router.get('/tags/:id', (req, res, next) => {
   const { id } = req.params;
   Tag.findById(id)
-    .select(['name','id'])
+    .select(['name', 'id'])
     .then((response) => {
       if (response === null) {
         const err = new Error('A Tag with this ID could not be found');
-        err.status=404;
+        err.status = 404;
         return next(err);
       }
       res.json(response);
     })
-    .catch(err => {
+    .catch((err) => {
       if (err.path === '_id') {
         const err = new Error('The tag ID that you have requested does not exist. Not only does it not exist, it couldn\'t possibly exist!');
         err.status = 400;
@@ -41,8 +43,8 @@ router.get('/tags/:id', (req,res,next) => {
 });
 
 
-router.post('/tags/', (req,res,next) => {
-  const {name} = req.body;
+router.post('/tags/', (req, res, next) => {
+  const { name } = req.body;
 
   // Validate Name field
   if (!name) {
@@ -51,8 +53,8 @@ router.post('/tags/', (req,res,next) => {
     return next(err);
   }
 
-  Tag.create({name})
-    .then(response => {
+  Tag.create({ name })
+    .then((response) => {
       if (response === null) {
         const err = new Error('A tag with this id could not be found');
         err.status = 404;
@@ -60,15 +62,15 @@ router.post('/tags/', (req,res,next) => {
       }
       res.status(201).json(response);
     })
-    .catch(err => {
+    .catch((err) => {
       next(err);
     });
 });
 
 
-router.put('/tags/:id', (req,res,next) => {
-  const {id} = req.params;
-  const {name} = req.body;
+router.put('/tags/:id', (req, res, next) => {
+  const { id } = req.params;
+  const { name } = req.body;
   // Validate Name field
   if (!name) {
     const err = new Error('Missing Name of Tag');
@@ -76,26 +78,26 @@ router.put('/tags/:id', (req,res,next) => {
     return next(err);
   }
 
-  Tag.findByIdAndUpdate(id, {name}, {new:true})
+  Tag.findByIdAndUpdate(id, { name }, { new: true })
     .select('id name')
     .then((response) => {
       res.status(200).json(response);
     })
-    .catch(err => {
+    .catch((err) => {
       if (err.path === '_id') {
-        const err = new Error('The requested tag ID doesn\'t exist. Not only does it not exist, but it couldn\'t possibly exist!');
-        err.status = 400;
-        return next(err);
+        const error = new Error('The requested tag ID doesn\'t exist. Not only does it not exist, but it couldn\'t possibly exist!');
+        error.status = 400;
+        return next(error);
       }
       next(err);
     });
 });
 
 
-router.delete('/tags/:id', (req,res,next) => {
+router.delete('/tags/:id', (req, res, next) => {
   const { id } = req.params;
   Tag.findByIdAndRemove(id)
-    .then(response => {
+    .then((response) => {
       if (response === null) {
         const err = new Error('A tag with this id could not be found');
         err.status = 404;
@@ -103,7 +105,7 @@ router.delete('/tags/:id', (req,res,next) => {
       }
       res.status(204).end();
     })
-    .catch(err => {
+    .catch((err) => {
       if (err.path === '_id') {
         const err = new Error('The requested tag ID doesn\'t exist. Not only does it not exist, but it couldn\'t possibly exist!');
         err.status = 400;

@@ -3,7 +3,30 @@
 
 const noteful = (function () {
 
+  function showSuccessMessage(message) {
+    const el = $('.js-success-message');
+    el.text(message).show();
+    setTimeout(() => el.fadeOut('slow'), 3000);
+  }
+
+  function showFailureMessage(message) {
+    const el = $('.js-error-message');
+    el.text(message).show();
+    setTimeout(() => el.fadeOut('slow'), 3000);
+  }
+
+  function handleErrors(err) {
+    if (err.status === 401) {
+      store.authorized = false;
+      noteful.render();
+    }
+    showFailureMessage(err.responseJSON.message);
+  }
+
   function render() {
+
+    $('.signup-login').toggle(!store.authorized);
+
     const notesList = generateNotesList(store.notes, store.currentNote);
     $('.js-notes-list').html(notesList);
 
@@ -40,7 +63,7 @@ const noteful = (function () {
         <a href="#" class="name js-note-link">${item.title}</a>
         <button class="removeBtn js-note-delete-button">X</button>
         <div class="metadata">
-            <div class="date">${moment(item.create).calendar()}</div>
+            <div class="date">${moment(item.created).calendar()}</div>
             <div class="tags">${getTagsCommaSeparated(item.tags)}</div>
           </div>
       </li>`);
@@ -121,7 +144,8 @@ const noteful = (function () {
         .then((response) => {
           store.currentNote = response;
           render();
-        });
+        })
+        .catch(handleErrors);
     });
   }
 
@@ -135,7 +159,8 @@ const noteful = (function () {
         .then(response => {
           store.notes = response;
           render();
-        });
+        })
+        .catch(handleErrors);
     });
   }
 
@@ -162,7 +187,8 @@ const noteful = (function () {
           .then(response => {
             store.notes = response;
             render();
-          });
+          })
+          .catch(handleErrors);
       } else {
         api.create('/v3/notes', noteObj)
           .then(createResponse => {
@@ -172,7 +198,8 @@ const noteful = (function () {
           .then(response => {
             store.notes = response;
             render();
-          });
+          })
+          .catch(handleErrors);
       }
     });
   }
@@ -200,7 +227,8 @@ const noteful = (function () {
         .then(response => {
           store.notes = response;
           render();
-        });
+        })
+        .catch(handleErrors);
     });
   }
 
@@ -221,7 +249,8 @@ const noteful = (function () {
         .then(response => {
           store.notes = response;
           render();
-        });
+        })
+        .catch(handleErrors);
     });
   }
 
@@ -234,12 +263,12 @@ const noteful = (function () {
         .then(() => {
           $('.js-new-folder-entry').val();
           return api.search('/v3/folders');
-        }).then(response => {
+        })
+        .then(response => {
           store.folders = response;
           render();
-        }).catch(err => {
-          $('.js-error-message').text(err.responseJSON.message);
-        });
+        })
+        .catch(handleErrors);
     });
   }
 
@@ -261,11 +290,12 @@ const noteful = (function () {
           const folderPromise = api.search('/v3/folders');
           return Promise.all([notesPromise, folderPromise]);
         })
-        .then( ([notes, folders])  => {
+        .then(([notes, folders]) => {
           store.notes = notes;
           store.folders = folders;
           render();
-        });
+        })
+        .catch(handleErrors);
     });
   }
 
@@ -279,14 +309,14 @@ const noteful = (function () {
       const tagId = getTagIdFromElement(event.currentTarget);
       store.currentQuery.tagId = tagId;
 
-      //TODO; loop over tags, if not a match, then clear
       store.currentNote = {};
 
       api.search('/v3/notes', store.currentQuery)
         .then(response => {
           store.notes = response;
           render();
-        });
+        })
+        .catch(handleErrors);
     });
   }
 
@@ -298,13 +328,12 @@ const noteful = (function () {
       api.create('/v3/tags', { name: newTagName })
         .then(() => {
           return api.search('/v3/tags');
-        }).then(response => {
+        })
+        .then(response => {
           store.tags = response;
           render();
         })
-        .catch(err => {
-          console.error(err);
-        });
+        .catch(handleErrors);
     });
   }
 
@@ -317,7 +346,6 @@ const noteful = (function () {
         store.currentQuery.tagId = null;
       }
 
-      //TODO; loop over tags, if not a match, then clear
       store.currentNote = {};
 
       api.remove(`/v3/tags/${tagId}`)
@@ -331,10 +359,64 @@ const noteful = (function () {
         .then(response => {
           store.notes = response;
           render();
-        });
+        })
+        .catch(handleErrors);
     });
   }
-  
+
+  function handleSignupSubmit() {
+    $('.js-signup-from').on('submit', event => {
+      event.preventDefault();
+
+      const signupForm = $(event.currentTarget);
+      const newUser = {
+        fullname: signupForm.find('.js-fullname-entry').val(),
+        username: signupForm.find('.js-username-entry').val(),
+        password: signupForm.find('.js-password-entry').val()
+      };
+
+      api.create('/v3/users', newUser)
+        .then(response => {
+          signupForm[0].reset();
+          showSuccessMessage(`Thank you, ${response.fullname || response.username} for signing up!`);
+        })
+        .catch(handleErrors);
+    });
+  }
+
+  function handleLoginSubmit() {
+    $('.js-login-form').on('submit', event => {
+      event.preventDefault();
+
+      const loginForm = $(event.currentTarget);
+      const loginUser = {
+        username: loginForm.find('.js-username-entry').val(),
+        password: loginForm.find('.js-password-entry').val()
+      };
+
+      api.create('/v3/login', loginUser)
+        .then(response => {
+          store.authorized = true;
+          loginForm[0].reset();
+
+          store.currentUser = response;
+
+          return Promise.all([
+            api.search('/v3/notes'),
+            api.search('/v3/folders'),
+            api.search('/v3/tags')
+          ]);
+        })
+        .then(([notes, folders, tags]) => {
+          store.notes = notes;
+          store.folders = folders;
+          store.tags = tags;
+          render();
+        })
+        .catch(handleErrors);
+    });
+  }  
+
   function bindEventListeners() {
     handleNoteItemClick();
     handleNoteSearchSubmit();
@@ -349,6 +431,9 @@ const noteful = (function () {
     handleTagClick();
     handleNewTagSubmit();
     handleTagDeleteClick();
+
+    handleSignupSubmit();
+    handleLoginSubmit();
   }
 
   // This object contains the only exposed methods from this module:
