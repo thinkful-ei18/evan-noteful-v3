@@ -1,17 +1,36 @@
 'use strict';
 
 /** global passport */
-
+const jwt = require('jsonwebtoken');
 const express = require('express');
-
+const {JWT_SECRET, JWT_EXPIRY} = require('../config');
 const router = express.Router();
 const passport = require('passport');
+
+
+// Generate JWT for User
+const createAuthToken = (user) => {
+  return jwt.sign({user}, JWT_SECRET, {
+    subject:user.username,
+    expiresIn: JWT_EXPIRY
+  });
+};
+
 
 // const User = require('../models/users.model');
 const options = { session: false, failWithError: true };
 const localAuth = passport.authenticate('local', options);
+
 router.post('/login', localAuth, (req, res) => {
-  res.json(req.user);
+  const authToken = createAuthToken(req.user);
+  res.json({authToken}); 
+});
+
+const jwtAuth = passport.authenticate('jwt', {session:false, failWithError:true});
+
+router.get('/auth/refresh', jwtAuth, (req,res,next) => {
+  const authToken = createAuthToken(req.user);
+  res.json({authToken});
 });
 
 module.exports = router;

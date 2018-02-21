@@ -3,6 +3,14 @@
 
 const noteful = (function () {
 
+  function handleErrors(err) {
+    if (err.status === 401) {
+      store.authorized = false;
+      noteful.render();
+    }
+    showFailureMessage(err.responseJSON.message);
+  }
+
   function showSuccessMessage(message) {
     const el = $('.js-success-message');
     el.text(message).show();
@@ -15,16 +23,7 @@ const noteful = (function () {
     setTimeout(() => el.fadeOut('slow'), 3000);
   }
 
-  function handleErrors(err) {
-    if (err.status === 401) {
-      store.authorized = false;
-      noteful.render();
-    }
-    showFailureMessage(err.responseJSON.message);
-  }
-
   function render() {
-
     $('.signup-login').toggle(!store.authorized);
 
     const notesList = generateNotesList(store.notes, store.currentNote);
@@ -396,11 +395,13 @@ const noteful = (function () {
 
       api.create('/v3/login', loginUser)
         .then(response => {
-          store.authorized = true;
+          store.authToken = response.authToken;
+          store.authorized = true; 
           loginForm[0].reset();
-
-          store.currentUser = response;
-
+  
+          const payload = JSON.parse(atob(response.authToken.split('.')[1]));
+          store.currentUser = payload.user;
+  
           return Promise.all([
             api.search('/v3/notes'),
             api.search('/v3/folders'),

@@ -1,5 +1,5 @@
 'use strict';
-
+require('dotenv').config();
 const express = require('express');
 const morgan = require('morgan');
 const { PORT } = require('./config');
@@ -11,7 +11,7 @@ const { MONGODB_URI } = require('./config');
 const audioRouter = require('./routes/audio');
 const usersRouter = require('./routes/users');
 const loginRouter = require('./routes/auth.routes');
-
+const jwtStrategy = require('./passport/jwt');
 const passport = require('passport');
 const localStrategy = require('./passport/local');
 
@@ -32,14 +32,21 @@ app.use(express.json());
 
 // Passport Init
 passport.use(localStrategy);
+passport.use(jwtStrategy);
 
+// Mount users and login router, will not be protected
+app.use('/v3', usersRouter);
+app.use('/v3', loginRouter);
+
+const authenticatejwt = passport.authenticate('jwt', {session: false, failWithError:true});
+
+app.use(authenticatejwt);
 // // Mount router on "/api"
 app.use('/v3', notesRouter);
 app.use('/v3', foldersRouter);
 app.use('/v3', audioRouter);
 app.use('/v3', tagsRouter);
-app.use('/v3', usersRouter);
-app.use('/v3', loginRouter);
+
 
 // Catch-all 404
 app.use((req, res, next) => {
