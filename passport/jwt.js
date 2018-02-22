@@ -1,15 +1,25 @@
 'use strict';
+const jwt = require('jsonwebtoken');
 
 const {JWT_SECRET} = require('../config');
-const { Strategy: JwtStrategy, ExtractJwt } = require('passport-jwt');
-const options = {
-  secretOrKey: JWT_SECRET,
-  jwtFromRequest:ExtractJwt.fromAuthHeaderWithScheme('Bearer'),
-  algorithms: ['HS256']
+
+const jwtAuth = (req,res,next) => {
+  if (!req.headers.authorization) {
+    const err = new Error('Not Authenticated, please Login');
+
+  }
+  if (req.headers.authorization) {
+    const token = req.headers.authorization.split(' ')[1];
+    jwt.verify(token, JWT_SECRET, (err,userInfo) => {
+      if (err) {
+        err.message = 'Not Authenticated, please Login';
+        res.json({err});
+      } else {
+        req.user = userInfo;
+        next();
+      }
+    });
+  }
 };
 
-const jwtstrategy = new JwtStrategy(options, (payload, done) => {
-  done(null, payload.user);
-});
-
-module.exports = jwtstrategy;
+module.exports = jwtAuth;

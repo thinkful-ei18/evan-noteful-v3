@@ -36,5 +36,11 @@ UserSchema.statics.hashPassword = function (password) {
   return bcrypt.hash(password, 10); 
 };
 
+UserSchema.methods.serialize = function () {
+  return {
+    fullname:this.fullname,
+    username:this.username
+  };
+};
 
 module.exports = mongoose.model('User', UserSchema);
