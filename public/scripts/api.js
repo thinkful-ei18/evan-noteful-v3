@@ -1,4 +1,4 @@
-/* global $ */
+/* global $, store*/
 'use strict';
 
 const api = (function () {
@@ -8,7 +8,7 @@ const api = (function () {
       url: path,
       dataType: 'json',
       data: query,
-      headers: {'Authorization': `Bearer ${store.authToken}`}
+      headers: {'Authorization': `Bearer ${store.authToken || localStorage.getItem('authToken')}`}
     });
   };
   const details = function(path) {
@@ -16,7 +16,7 @@ const api = (function () {
       type: 'GET',
       dataType: 'json',
       url: path,
-      headers: {'Authorization': `Bearer ${store.authToken}`}
+      headers: {'Authorization': `Bearer ${store.authToken || localStorage.getItem('authToken')}`}
     });
   };
   const update = function(path, obj) {
@@ -26,7 +26,7 @@ const api = (function () {
       contentType: 'application/json',
       dataType: 'json',
       data: JSON.stringify(obj),
-      headers: {'Authorization': `Bearer ${store.authToken}`}
+      headers: {'Authorization': `Bearer ${store.authToken || localStorage.getItem('authToken')}`}
     });
   };
   const create = function(path, obj) {
@@ -37,7 +37,7 @@ const api = (function () {
       dataType: 'json',
       processData:false,
       data: JSON.stringify(obj),
-      headers: {'Authorization': `Bearer ${store.authToken}`}
+      headers: {'Authorization': `Bearer ${store.authToken || localStorage.getItem('authToken')}`}
     });
   };
   const remove = function(path) {
@@ -45,7 +45,7 @@ const api = (function () {
       type: 'DELETE',
       dataType: 'json',
       url: path,
-      headers: {'Authorization': `Bearer ${store.authToken}`}
+      headers: {'Authorization': `Bearer ${store.authToken || localStorage.getItem('authToken')}`}
     });
   };
   return {

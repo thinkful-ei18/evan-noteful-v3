@@ -5,6 +5,7 @@ const express = require('express');
 const router = express.Router();
 const Note = require('../models/notes.model');
 const mongoose = require('mongoose');
+const jwt = require('jsonwebtoken');
 
 /* ========== GET/READ ALL ITEM ========== */
 
@@ -14,8 +15,12 @@ router.get('/notes', (req, res, next) => {
   const {tagId} = req.query;
   const projection = {'title':1,'content':1,'create':1,'tags':1};
 
-
+  const userId = req.user.id;
   const queries = {};
+
+  if (userId) {
+    queries.author = userId;
+  }
 
   if (searchTerm) {
     queries.$text = {
@@ -73,7 +78,7 @@ router.get('/notes/:id', (req, res, next) => {
 /* ========== POST/CREATE AN ITEM ========== */
 router.post('/notes', (req, res, next) => {
   const {folderId, tags} = req.body;
-  const requiredFields = ['title','content'];
+  const requiredFields = ['title','content','author'];
   const newNote = {};
 
   if (tags) { 

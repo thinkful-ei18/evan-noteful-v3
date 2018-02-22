@@ -20,7 +20,8 @@ const notesSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Folder' 
   },
-  tags:[{type:mongoose.Schema.Types.ObjectId, ref:'Tag'}]
+  tags:[{type:mongoose.Schema.Types.ObjectId, ref:'Tag'}],
+  author:{type:mongoose.Schema.Types.ObjectId, ref:'User'}
 
 });
   

@@ -5,10 +5,11 @@ const { MONGODB_URI } = require('../../config');
 const Note = require('../../models/notes.model.js');
 const Folder = require('../../models/folders.model');
 const Tag = require('../../models/tags.models');
-
+const User = require('../../models/users.model');
 const seedNotes = require('../../db/seed/notes.json');
 const seedFolders = require('../../db/seed/folders.json');
 const seedTags = require('../../db/seed/tags.json');
+const seedUsers = require('../../db/seed/users.json');
 
 
 const seedDB = () => {
@@ -20,6 +21,10 @@ const seedDB = () => {
         });
     })
     .then(() => {
+      return User.insertMany(seedUsers);
+    })
+    .then((response) => {
+      console.log(`Inserted ${response.length} users`);
       return Note.insertMany(seedNotes)
         .then(results => {
           console.info(`Inserted ${results.length} Notes`);

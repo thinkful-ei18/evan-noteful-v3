@@ -167,14 +167,15 @@ const noteful = (function () {
   function handleNoteFormSubmit() {
     $('.js-note-edit-form').on('submit', function (event) {
       event.preventDefault();
-
+      console.log('this ran');
       const editForm = $(event.currentTarget);
       const noteObj = {
         id: store.currentNote.id,
         title: editForm.find('.js-note-title-entry').val(),
         content: editForm.find('.js-note-content-entry').val(),
         folderId: editForm.find('.js-note-folder-entry').val(),
-        tags: editForm.find('.js-note-tags-entry').val()
+        tags: editForm.find('.js-note-tags-entry').val(),
+        author:store.currentUser.id
       };
 
       if (store.currentNote.id) {
@@ -191,6 +192,7 @@ const noteful = (function () {
       } else {
         api.create('/v3/notes', noteObj)
           .then(createResponse => {
+            console.log('there was a response');
             store.currentNote = createResponse;
             return api.search('/v3/notes', store.currentQuery);
           })
@@ -396,6 +398,7 @@ const noteful = (function () {
       api.create('/v3/login', loginUser)
         .then(response => {
           store.authToken = response.authToken;
+          localStorage.setItem('authToken',response.authToken);
           store.authorized = true; 
           loginForm[0].reset();
   

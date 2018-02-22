@@ -37,14 +37,13 @@ passport.use(jwtStrategy);
 // Mount users and login router, will not be protected
 app.use('/v3', usersRouter);
 app.use('/v3', loginRouter);
-
+app.use('/v3', audioRouter);
 const authenticatejwt = passport.authenticate('jwt', {session: false, failWithError:true});
 
 app.use(authenticatejwt);
 // // Mount router on "/api"
 app.use('/v3', notesRouter);
 app.use('/v3', foldersRouter);
-app.use('/v3', audioRouter);
 app.use('/v3', tagsRouter);
 
 
