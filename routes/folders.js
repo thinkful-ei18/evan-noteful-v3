@@ -1,4 +1,4 @@
-
+'use strict';
 
 const express = require('express');
 
@@ -13,7 +13,7 @@ const Note = require('../models/notes.model');
 
 //= ==================<MAIN GET ROUTE>==========================>
 router.get('/folders', (req, res, next) => {
-  Folder.find({})
+  Folder.find({'author':req.user.id})
     .sort({ name: 1 })
     .then((folders) => {
       res.json(folders);
@@ -57,6 +57,7 @@ router.post('/folders', (req, res, next) => {
   }
 
   Folder.create({
+    author:req.user.id,
     name: req.body.name,
   })
     .then((newFolder) => {

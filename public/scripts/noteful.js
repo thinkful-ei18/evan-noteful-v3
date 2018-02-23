@@ -24,6 +24,8 @@ const noteful = (function () {
   }
 
   function render() {
+
+    $('.js-user-greeting').text(`${store.currentUser.fullname}`);
     $('.signup-login').toggle(!store.authorized);
 
     const notesList = generateNotesList(store.notes, store.currentNote);
@@ -260,12 +262,13 @@ const noteful = (function () {
       event.preventDefault();
 
       const newFolderName = $('.js-new-folder-entry').val();
-      api.create('/v3/folders', { name: newFolderName })
+      api.create('/v3/folders', { name: newFolderName})
         .then(() => {
           $('.js-new-folder-entry').val();
           return api.search('/v3/folders');
         })
         .then(response => {
+          console.log(response);
           store.folders = response;
           render();
         })

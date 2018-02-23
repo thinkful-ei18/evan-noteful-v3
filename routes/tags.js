@@ -11,7 +11,7 @@ const Tag = require('../models/tags.models');
 // MAIN GET ROUTE
 
 router.get('/tags', (req, res, next) => {
-  Tag.find()
+  Tag.find({'author':req.user.id})
     .then((response) => {
       res.json(response);
     })
@@ -53,7 +53,7 @@ router.post('/tags/', (req, res, next) => {
     return next(err);
   }
 
-  Tag.create({ name })
+  Tag.create({ name, author:req.user.id })
     .then((response) => {
       if (response === null) {
         const err = new Error('A tag with this id could not be found');

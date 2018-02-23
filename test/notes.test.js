@@ -21,6 +21,8 @@ before(function () {
   return mongoose.connect(TEST_MONGODB_URI, { autoIndex: false });
 });
 
+console.log(TEST_MONGODB_URI);
+
 beforeEach(function () {
   return Note.insertMany(seedNotes)
     .then(() => Note.ensureIndexes())

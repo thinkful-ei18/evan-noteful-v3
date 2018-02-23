@@ -15,7 +15,7 @@ const jwtAuth = (req,res,next) => {
         err.message = 'Not Authenticated, please Login';
         res.json({err});
       } else {
-        req.user = userInfo;
+        req.user = userInfo.user;
         next();
       }
     });

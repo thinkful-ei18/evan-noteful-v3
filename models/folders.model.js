@@ -5,7 +5,10 @@ const FolderSchema = mongoose.Schema({
   name: {
     type:String,
     required:true,
-    unique:true
+  },
+  author: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref:'User'
   }
 });
 
@@ -17,6 +20,9 @@ FolderSchema.set('toObject', {
     delete ret.__v;
   }
 });
+
+
+FolderSchema.index({name:1, author:1}, {unique:true});
 
 module.exports = mongoose.model('Folder', FolderSchema);
 

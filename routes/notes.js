@@ -6,6 +6,8 @@ const router = express.Router();
 const Note = require('../models/notes.model');
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
+const Folder = require('../models/folders.model');
+const Tag = require('../models/tags.models');
 
 /* ========== GET/READ ALL ITEM ========== */
 
@@ -13,14 +15,10 @@ router.get('/notes', (req, res, next) => {
   const {searchTerm} = req.query;
   const {folderId} = req.query;
   const {tagId} = req.query;
-  const projection = {'title':1,'content':1,'create':1,'tags':1};
+  const projection = {'title':1,'content':1,'create':1,'tags':1, 'author':1};
 
-  const userId = req.user.id;
   const queries = {};
-
-  if (userId) {
-    queries.author = userId;
-  }
+  queries.author = req.user.id;
 
   if (searchTerm) {
     queries.$text = {
@@ -51,8 +49,8 @@ router.get('/notes/:id', (req, res, next) => {
   const { id } = req.params;
 
   // Query DB to search for Notes by ID
-  Note.findById(id)
-    .select('title content create tags')
+  Note.findOne({_id:id, author:req.user.id})
+    .select('title content create tags author')
     .populate('tags')
   
     .then(note => {
@@ -78,7 +76,7 @@ router.get('/notes/:id', (req, res, next) => {
 /* ========== POST/CREATE AN ITEM ========== */
 router.post('/notes', (req, res, next) => {
   const {folderId, tags} = req.body;
-  const requiredFields = ['title','content','author'];
+  const requiredFields = ['title','content'];
   const newNote = {};
 
   if (tags) { 
@@ -103,19 +101,84 @@ router.post('/notes', (req, res, next) => {
     }
   });
 
-  if (folderId) {
-    newNote.folderId = folderId;
+  // Assign Author Id to note -- Req.user is the author
+  newNote.author = req.user.id;
+
+
+  // If the new note does not have any assigned folders or tags, validation for folders and tags is not necessary. 
+  // We can just create the item.
+  if (!folderId && tags.length === 0) {
+    Note.create(newNote)
+      .then((response) => {
+        res.location(`/v3/notes/${response.id}`).status(201).json(response);
+      });
   }
 
 
-  Note.create(newNote)
-    .then(response => {
-      res.location(`/v3/notes/${response.id}`).status(201).json(response);
-      // res.status(201).json(response);
-    });
+  // If there is a folderId, we need to validate that the folder it is being associated with belongs to this user
+  // We also need to check to see if the tags that are being assigned to the item (because at this point in the data flow, 
+  // we know that there is at least one tag being associated with the note) belong to the user.
+  if (folderId) {
+    newNote.folderId = folderId;
+
+    Promise.all([checkTags(tags,req.user.id),checkFolders(folderId,req.user.id)])
+      .then(() => {
+        return Note.create(newNote);
+      })
+      .then((note) => {
+        res.status(201).json(note);
+      })
+      .catch(err => {
+        return next(err);
+      });
+  }
+
 });
   
 
+
+
+// GLOBAL helper functions
+const checkTags = (tagsArr, userId) => {
+  return new Promise((resolve, reject) => {
+    if (tagsArr.length === 0) {
+      return resolve('Valid');
+    }
+    return Tag.find({'author':userId})
+      .then((myTags) => {
+        console.log('tags from DB associated with me: ',myTags);
+        const myTagIds = [];
+        myTags.forEach((tag) => {
+          myTagIds.push(tag.id);
+        });
+
+        console.log('my array of tag IDs: ',myTagIds);
+        tagsArr.forEach((tag)=>{
+          if (!(myTagIds.includes(tag))) {
+            console.log('this is the tag that broke everything',tag);
+            const err = new Error('An associated tag does not exist in your acccount');
+            return reject(err);
+          }
+        });
+
+        return resolve('Valid');
+      });
+  });
+};
+
+
+
+const checkFolders = (folderId,userId) => {
+  return Folder.find({'_id':folderId, 'author':userId})
+    .then(folder =>{
+      if (!folder) {
+        return Promise.reject({
+          'Message':'The associated Folder does not exist in your account'
+        });
+      }
+      return Promise.resolve('Valid');
+    });  
+};
 
 
 /* ========== PUT/UPDATE A SINGLE ITEM ========== */
@@ -148,22 +211,30 @@ router.put('/notes/:id', (req, res, next) => {
     }
   });
 
-  
-  if (folderId) {
-    updateObj.folderId = folderId;
-  }
 
-
-  Note.findByIdAndUpdate(id, updateObj, {new:true})
+  Note.findById(id)
     .then(response => {
-      if (response === null) {
-        const err = new Error('Note with this id does not exist');
-        err.status = 404;
-        next(err);
+      if (response.author.toString() !== req.user.id) {
+        const err = new Error('Note does not exist in your account');
+        err.status = 400;
+        return next(err);
       }
-      res.json(response);
+    });
+
+
+
+  Promise.all([checkTags(tags,req.user.id),checkFolders(folderId,req.user.id)])
+    .then(() => {
+      return Note.findByIdAndUpdate(id, updateObj,{new:true});
     })
-    .catch(next);
+    .then((note) => {
+      res.status(200).json(note);
+    })
+    .catch(err => {
+      return next(err);
+    });
+
+
 });
 
 /* ========== DELETE/REMOVE A SINGLE ITEM ========== */

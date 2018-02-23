@@ -1,19 +1,23 @@
 [
   {
     "_id": "111111111111111111111100",
-    "name": "Archive"
+    "name": "Archive",
+    "author":"5a8e290120cdca21285ad434"
   },
   {
     "_id": "111111111111111111111101",
-    "name": "Drafts"
+    "name": "Drafts",
+    "author":"5a8e290120cdca21285ad434"
   },
   {
     "_id": "111111111111111111111102",
-    "name": "Personal"
+    "name": "Personal",
+    "author":"5a8e283ec634d7231c62cccd"
   },
   {
     "_id": "111111111111111111111103",
-    "name": "Work"
+    "name": "Work",
+    "author":"5a8e283ec634d7231c62cccd"
   }
 ]
 
