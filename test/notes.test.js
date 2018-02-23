@@ -4,7 +4,7 @@ const chai = require('chai');
 const chaiHttp = require('chai-http');
 const chaiSpies = require('chai-spies');
 const expect = chai.expect;
-const {TEST_MONGODB_URI} = require('../config');
+const {TEST_MONGODB_URI, MONGODB_URI} = require('../config');
 const {JWT_SECRET, JWT_EXPIRY} = require('../config');
 const seedNotes = require('../db/seed/notes.json');
 const mongoose = require('mongoose');
@@ -20,7 +20,7 @@ chai.use(chaiSpies);
 
 
 before(function () {
-  return mongoose.connect(TEST_MONGODB_URI, { autoIndex: false }, () => {
+  return mongoose.connect(MONGODB_URI, { autoIndex: false }, () => {
     return mongoose.connection.db.dropDatabase();
   });
 });
