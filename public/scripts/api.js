@@ -40,12 +40,13 @@ const api = (function () {
       headers: {'Authorization': `Bearer ${store.authToken || localStorage.getItem('authToken')}`}
     });
   };
-  const remove = function(path) {
+  const remove = function(path,callback) {
     return $.ajax({
       type: 'DELETE',
       dataType: 'json',
       url: path,
-      headers: {'Authorization': `Bearer ${store.authToken || localStorage.getItem('authToken')}`}
+      headers: {'Authorization': `Bearer ${store.authToken || localStorage.getItem('authToken')}`},
+      success:callback
     });
   };
   return {

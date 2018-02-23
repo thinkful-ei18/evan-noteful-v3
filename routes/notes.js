@@ -121,12 +121,12 @@ router.post('/notes', (req, res, next) => {
   if (folderId) {
     newNote.folderId = folderId;
 
-    Promise.all([checkTags(tags,req.user.id),checkFolders(folderId,req.user.id)])
+    return Promise.all([checkTags(tags,req.user.id),checkFolders(folderId,req.user.id)])
       .then(() => {
         return Note.create(newNote);
       })
       .then((note) => {
-        res.status(201).json(note);
+        res.location(`/v3/notes/${note.id}`).status(201).json(note);
       })
       .catch(err => {
         return next(err);
@@ -141,21 +141,21 @@ router.post('/notes', (req, res, next) => {
 // GLOBAL helper functions
 const checkTags = (tagsArr, userId) => {
   return new Promise((resolve, reject) => {
+    if (!tagsArr) {
+      return resolve('Valid');
+    }
     if (tagsArr.length === 0) {
       return resolve('Valid');
     }
     return Tag.find({'author':userId})
       .then((myTags) => {
-        console.log('tags from DB associated with me: ',myTags);
         const myTagIds = [];
         myTags.forEach((tag) => {
           myTagIds.push(tag.id);
         });
 
-        console.log('my array of tag IDs: ',myTagIds);
         tagsArr.forEach((tag)=>{
           if (!(myTagIds.includes(tag))) {
-            console.log('this is the tag that broke everything',tag);
             const err = new Error('An associated tag does not exist in your acccount');
             return reject(err);
           }
@@ -211,19 +211,24 @@ router.put('/notes/:id', (req, res, next) => {
     }
   });
 
-
-  Note.findById(id)
-    .then(response => {
-      if (response.author.toString() !== req.user.id) {
-        const err = new Error('Note does not exist in your account');
-        err.status = 400;
-        return next(err);
+  return Note.findById(id)
+    .then((response) => {
+      if (response === null) {
+        const err = new Error('Note does not exist!');
+        err.status = 404;
+        return Promise.reject(err);
       }
-    });
+      if (response.author.toString() !== req.user.id) {
+        const err = new Error('Note does not exist for your account');
+        err.status = 404;
+        return Promise.reject(err);
+      }
 
-
-
-  Promise.all([checkTags(tags,req.user.id),checkFolders(folderId,req.user.id)])
+      console.log('response: ',response);
+    })
+    .then(() => {
+      return Promise.all([checkTags(tags,req.user.id),checkFolders(folderId,req.user.id)]);
+    })
     .then(() => {
       return Note.findByIdAndUpdate(id, updateObj,{new:true});
     })
@@ -249,7 +254,6 @@ router.delete('/notes/:id', (req, res, next) => {
         err.status = 404;
         next(err);
       } else {
-        // res.json(response);
         res.status(204).end();
       }
     })

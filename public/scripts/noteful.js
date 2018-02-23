@@ -8,7 +8,7 @@ const noteful = (function () {
       store.authorized = false;
       noteful.render();
     }
-    showFailureMessage(err.responseJSON.message);
+    showFailureMessage(err.statusText);
   }
 
   function showSuccessMessage(message) {
@@ -19,7 +19,7 @@ const noteful = (function () {
 
   function showFailureMessage(message) {
     const el = $('.js-error-message');
-    el.text(message).show();
+    el.html(message).show();
     setTimeout(() => el.fadeOut('slow'), 3000);
   }
 
@@ -279,6 +279,7 @@ const noteful = (function () {
   function handleFolderDeleteClick() {
     $('.js-folders-list').on('click', '.js-folder-delete', event => {
       event.preventDefault();
+      console.log('folder Delete');
       const folderId = getFolderIdFromElement(event.currentTarget);
 
       if (folderId === store.currentQuery.folderId) {
@@ -290,16 +291,19 @@ const noteful = (function () {
 
       api.remove(`/v3/folders/${folderId}`)
         .then(() => {
-          const notesPromise = api.search('/v3/notes');
-          const folderPromise = api.search('/v3/folders');
-          return Promise.all([notesPromise, folderPromise]);
+          console.log('folder removed');
+          return api.search('/v3/folders');
         })
-        .then(([notes, folders]) => {
-          store.notes = notes;
+        .then((folders) => {
+          console.log(folders);
           store.folders = folders;
           render();
         })
-        .catch(handleErrors);
+        .catch( (err) => {
+          console.log('err block');
+          console.log('made it here');
+          handleErrors(err);
+        });
     });
   }
 

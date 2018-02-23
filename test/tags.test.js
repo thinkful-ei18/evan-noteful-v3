@@ -4,22 +4,29 @@ const chai = require('chai');
 const chaiHttp = require('chai-http');
 const chaiSpies = require('chai-spies');
 const expect = chai.expect;
-const {TEST_MONGODB_URI} = require('../config');
-const {runServer, closeServer} = require('../server');
-const seedNotes = require('../db/seed/notes.json');
-const mongoose = require('mongoose');
-const Note = require('../models/notes.model');
-const Folder = require('../models/folders.model');
 const Tag = require('../models/tags.models');
-const seedFolders = require('../db/seed/folders.json');
+const {JWT_EXPIRY, JWT_SECRET} = require('../config');
+const jwt = require('jsonwebtoken');
 
 
 chai.use(chaiHttp);
 chai.use(chaiSpies);
 
 
+const createAuthToken = (user) => {
+  return jwt.sign({user}, JWT_SECRET, {
+    subject:user.username,
+    expiresIn: JWT_EXPIRY
+  });
+};
+
+
+const validjwtToken =  createAuthToken({'username':'evang522', 'fullname':'Evan Garrett','id':'5a8e283ec634d7231c62cccd'});
+
+
+
 const dbCall = Tag.find();
-const serverCall = chai.request(app).get('/v3/tags');
+const serverCall = chai.request(app).get('/v3/tags').set({'authorization':`Bearer ${validjwtToken}`});
 
 describe('GET /v3/tags', function () {
   it('should return a list of tags', function () {
@@ -30,7 +37,7 @@ describe('GET /v3/tags', function () {
         expect(serverRes.body.length).to.equal(dbRes.length);
         expect(serverRes).to.be.json;
         expect(dbRes[0].name).to.equal('foo');
-        expect(serverRes.body[0]).to.have.keys('id','name');
+        expect(serverRes.body[0]).to.have.keys('id','name','author');
         expect(serverRes.body[0].name).to.equal('foo');
       });
   });
@@ -43,9 +50,10 @@ describe('GET /v3/tags:id', function () {
     const ID = '222222222222222222222203';
     return chai.request(app)
       .get('/v3/tags/'+ID)
+      .set({'authorization':`Bearer ${validjwtToken}`})
       .then(response => {
         expect(response).to.have.status(200);
-        expect(response.body).to.have.keys('id','name');
+        expect(response.body).to.have.keys('id','name','author');
         expect(response.body.name).to.equal('qux');
       });
   });
@@ -54,6 +62,7 @@ describe('GET /v3/tags:id', function () {
     const ID = '222222222222222222222209';
     return chai.request(app)
       .get('/v3/tags/'+ID)
+      .set({'authorization':`Bearer ${validjwtToken}`})
       .catch(err => {
         expect(err).to.have.status(404);
       });
@@ -63,6 +72,7 @@ describe('GET /v3/tags:id', function () {
     const ID = '2222222222222222abc1323';
     return chai.request(app)
       .get('/v3/tags/'+ID)
+      .set({'authorization':`Bearer ${validjwtToken}`})
       .catch(err => {
         expect(err).to.have.status(400);
       });
@@ -75,11 +85,12 @@ describe('POST /v3/tags', function () {
   it('Should create a tag with valid post query', function () {
     return chai.request(app)
       .post('/v3/tags')
+      .set({'authorization':`Bearer ${validjwtToken}`})
       .send(newTag)
       .then((response) => {
         tag = response.body;
         expect(response).to.have.status(201);
-        expect(response.body).to.have.keys('id','name');
+        expect(response.body).to.have.keys('id','name','author');
         expect(response.body.name).to.equal('Ich Bin so Mude');
 
         return Tag.findById(tag.id)
@@ -93,6 +104,7 @@ describe('POST /v3/tags', function () {
   it('Should return a 400 error when \'name\' body is missing', function () {
     return chai.request(app)
       .post('/v3/tags')
+      .set({'authorization':`Bearer ${validjwtToken}`})
       .send({'title':'hey'})
       .catch(err => {
         expect(err).to.have.status(400);
@@ -107,10 +119,12 @@ describe('PUT /v3/tags', function () {
     const editTag = {'name':'Personal'};
     return chai.request(app)
       .put('/v3/tags/'+ID)
+      .set({'authorization':`Bearer ${validjwtToken}`})
       .send(editTag)
       .then(response => {
         expect(response).to.have.status(200);
-        expect(response.body).to.have.keys('id','name');
+        console.log(response.body);
+        expect(response.body).to.have.keys('id','name','author');
         expect(response.body.name).to.equal('Personal');
         return Tag.findById(ID);
       })
@@ -126,6 +140,7 @@ describe('PUT /v3/tags', function () {
     const editTag = {'name':'Personal'};
     return chai.request(app)
       .put('/v3/tags/'+ID)
+      .set({'authorization':`Bearer ${validjwtToken}`})
       .send(editTag)
       .catch(err => {
         expect(err).to.have.status(404);
@@ -138,6 +153,7 @@ describe('PUT /v3/tags', function () {
 
     return chai.request(app)
       .put('/v3/tags/'+ID)
+      .set({'authorization':`Bearer ${validjwtToken}`})
       .send(editTag)
       .catch(err => {
         expect(err).to.have.status(400);
@@ -152,6 +168,7 @@ describe('DELETE /v3/tags/:id', function () {
     const ID = '222222222222222222222201';
     return chai.request(app)
       .delete('/v3/tags/'+ID)
+      .set({'authorization':`Bearer ${validjwtToken}`})
       .then(response => {
         expect(response).to.have.status(204);
         return Tag.count();

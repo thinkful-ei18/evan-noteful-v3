@@ -23,7 +23,7 @@ router.get('/tags', (req, res, next) => {
 router.get('/tags/:id', (req, res, next) => {
   const { id } = req.params;
   Tag.findById(id)
-    .select(['name', 'id'])
+    .select('name id author')
     .then((response) => {
       if (response === null) {
         const err = new Error('A Tag with this ID could not be found');
@@ -79,7 +79,7 @@ router.put('/tags/:id', (req, res, next) => {
   }
 
   Tag.findByIdAndUpdate(id, { name }, { new: true })
-    .select('id name')
+    .select('id name author')
     .then((response) => {
       res.status(200).json(response);
     })

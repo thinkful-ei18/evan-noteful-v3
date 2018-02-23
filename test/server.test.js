@@ -4,9 +4,22 @@ const chai = require('chai');
 const chaiHttp = require('chai-http');
 const chaiSpies = require('chai-spies');
 const expect = chai.expect;
+const jwt = require('jsonwebtoken');
+const {JWT_EXPIRY, JWT_SECRET} = require('../config');
 
 chai.use(chaiHttp);
 chai.use(chaiSpies);
+
+const createAuthToken = (user) => {
+  return jwt.sign({user}, JWT_SECRET, {
+    subject:user.username,
+    expiresIn: JWT_EXPIRY
+  });
+};
+
+
+const validjwtToken =  createAuthToken({'username':'evang522', 'fullname':'Evan Garrett','id':'5a8e283ec634d7231c62cccd'});
+
 
 describe('Reality Check', () => {
 
@@ -50,6 +63,7 @@ describe('Basic Express setup', () => {
       const spy = chai.spy();
       return chai.request(app)
         .get('/bad/path')
+        .set({'authorization':`Bearer ${validjwtToken}`})
         .then(spy)
         .then(() => {
           expect(spy).to.not.have.been.called();

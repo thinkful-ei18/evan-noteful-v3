@@ -20,9 +20,10 @@ const localStrategy = require('./passport/local');
 const app = express();
 
 // Log all requests. Skip logging during
-app.use(morgan(process.env.NODE_ENV === 'development' ? 'dev' : 'common', {
-  skip: () => process.env.NODE_ENV === 'test'
-}));
+// app.use(morgan(process.env.NODE_ENV === 'development' ? 'dev' : 'common', {
+//   skip: () => process.env.NODE_ENV === 'test'
+// }));
+app.use(morgan('common'));
 
 // Create a static webserver
 app.use(express.static('public'));

@@ -141,6 +141,7 @@ router.delete('/folders/:id', (req, res, next) => {
               err.status = 404;
               return next(err);
             }
+            res.status(204).end();
           });
       }
     })
