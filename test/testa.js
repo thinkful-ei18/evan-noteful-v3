@@ -1,0 +1,6 @@
+'use strict';
+
+const jwt = require('jsonwebtoken');
+
+const authToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImZ1bGxuYW1lIjoiRXZhbiBHYXJyZXR0IiwidXNlcm5hbWUiOiJldmFuZzUyMiIsImlkIjoiNWE4ZTI4M2VjNjM0ZDcyMzFjNjJjY2NkIn0sImlhdCI6MTUxOTQ0MzM0OCwiZXhwIjoxNTIwMDQ4MTQ4LCJzdWIiOiJldmFuZzUyMiJ9.-jv5V6tlXp9_t0cj40P0byLkeeeWII_8ATBRm6PkhWQ'
+

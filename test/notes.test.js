@@ -14,6 +14,8 @@ const seedFolders = require('../db/seed/folders.json');
 const seedTags = require('../db/seed/tags.json');
 const Tag = require('../models/tags.models');
 const jwt = require('jsonwebtoken');
+const seedUsers = require('../db/seed/users.json');
+const User = require('../models/users.model');
 
 chai.use(chaiHttp);
 chai.use(chaiSpies);
@@ -35,6 +37,13 @@ beforeEach(function () {
     })
     .then(() => {
       return Tag.insertMany(seedTags);
+    })
+    .then((response) => {
+      console.log(`Inserted ${response.length} Tags`);
+      return User.insertMany(seedUsers);
+    })
+    .then((response) => {
+      console.log(`Inserted ${response.length} Users`);
     });
 });
 

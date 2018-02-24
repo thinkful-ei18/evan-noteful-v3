@@ -8,6 +8,7 @@ const router = express.Router();
 const User = require('../models/users.model');
 
 router.post('/users', (req, res, next) => {
+  console.log(req.body);
   
   
   if (!req.body.username || !req.body.password) {
@@ -61,7 +62,7 @@ router.post('/users', (req, res, next) => {
       return User.create(newUser);
     })
     .then((response) => {
-      res.status(201).json(response);
+      res.status(201).json(response.serialize());
     })
     .catch((err) => {
       if (err.code === 11000) {

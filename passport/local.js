@@ -1,6 +1,5 @@
 'use strict';
 
-const { Strategy: LocalStrategy } = require('passport-local');
 const User = require('../models/users.model');
 
 // const localStrategy = new LocalStrategy(((username, password, done) => {
@@ -43,7 +42,7 @@ const localStrategy = (req,res,next) => {
   return User.findOne({username:req.body.username})
     .then(_user_ => {
       if (!_user_) {
-        const err = new Error('Credentials not formatted properly. You probably spelled \'username\' wrong or something like that');
+        const err = new Error('You haven\'t signed up yet!');
         err.status = 400;
         return next(err);
       }

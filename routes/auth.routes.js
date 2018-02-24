@@ -18,7 +18,7 @@ const createAuthToken = (user) => {
 
 
 // const User = require('../models/users.model');
-const options = { session: false, failWithError: true };
+// const options = { session: false, failWithError: true };
 // const localAuth = passport.authenticate('local', options);
 const localAuth = require('../passport/local');
 
