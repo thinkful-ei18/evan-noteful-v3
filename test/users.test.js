@@ -74,9 +74,38 @@ describe('Logging In', function () {
         expect(jwt.verify(authToken,JWT_SECRET).user.id).to.equal('5a8e283ec634d7231c62cccd');
       });
   });
+
+
+  const expiredToken = jwt.sign({username,password,fullname,exp: Math.floor(Date.now() / 1000) - 90}, JWT_SECRET);
+  it('Should reject a user with an expired auth token', function () {
+    return chai.request(app)
+      .get('/v3/notes')
+      .set({'authorization': expiredToken})
+      .then((response) => {
+        
+      })
+      .catch(err => {
+        expect(err).to.have.status(400);
+      });
+  });
 });
 
 
 
 
-
+// describe.only('Refresh Token', function () {
+//   it('Should return a token with a later expiration date', function () {
+//     const currentExp = (Date.now()/1000 + 100);
+//     const olderToken = jwt.sign({'username':'evang522', exp: currentExp}, JWT_SECRET);
+//     console.log(olderToken);
+//     return chai.request(app)
+//       .get('/v3/auth/refresh')
+//       .set({'authorization':`Bearer ${olderToken}`})
+//       .then((response) => {
+//         expect(response.exp).is.greaterThan(currentExp);
+//       })
+//       .catch(err => {
+//         console.log(err);
+//       });
+//   });
+// });

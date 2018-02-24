@@ -17,6 +17,9 @@ router.get('/notes', (req, res, next) => {
   const {tagId} = req.query;
   const projection = {'title':1,'content':1,'create':1,'tags':1, 'author':1};
 
+
+  console.log(req.user);
+
   const queries = {};
   queries.author = req.user.id;
 
